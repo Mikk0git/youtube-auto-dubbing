@@ -1,5 +1,6 @@
 import re
 from gtts import gTTS
+from googletrans import Translator
 
 
 def main():
@@ -21,6 +22,9 @@ def main():
 
     # Read srt file
     audioList = makeAudioList(srtFile)
+
+    # Translate
+    translateAudioList(audioList, lang)
 
     # Gtts
     generateAudio(audioList, lang)
@@ -63,10 +67,24 @@ def generateAudio(audioList, lang):
     for audio in audioList:
         if audio != "nothing":
 
-            tts = gTTS(audio["text"])
+            tts = gTTS(audio["text"], lang=lang)
             tts.save(f"audio/{index}.mp3")
             print(f"{index}/{len(audioList)-1}")
             index += 1
+    return audioList
+
+
+def translateAudioList(audioList, lang):
+    print("Translating audio...")
+    index = 1
+    translator = Translator()
+    for audio in audioList:
+        if audio != "nothing":
+            audio["text"] = translator.translate(audio["text"], dest=lang).text
+
+            print(f"{index}/{len(audioList)-1}")
+            index += 1
+    print(audioList)
     return audioList
 
 
