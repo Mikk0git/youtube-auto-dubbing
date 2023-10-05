@@ -6,21 +6,28 @@ def main():
     print("Youtube Auto Dubbing")
 
     try:
-        srtFileDir = input("Enter the path of the srt file: ")
-        # srtFileDir = 'C:\Users\Milan\Documents\projects\youtube-auto-dubbing\srt\[English] I Created Another App To REVOLUTIONIZE YouTube [DownSub.com].srt'
+        srtFileDir = input("Srt File Path: ")
         srtFile = open(srtFileDir, "r")
     except FileNotFoundError:
         print("File not found")
         return
+    lang = input("Target Language: ")
+    if not lang in ["", "en", "de", "fr", "es", "it", "pt", "nl", "pl", "ru", "tr", "ja", "ko", "zh"]:
+        print("Language not supported")
+        print("Supported languages: en, de, fr, es, it, pt, nl, pl, ru, tr, ja, ko, zh")
+        return
+    if lang == "":
+        lang = "en"
 
+    # Read srt file
     audioList = makeAudioList(srtFile)
-    # print(audioList)
 
     # Gtts
-    generateAudio(audioList, "en")
+    generateAudio(audioList, lang)
 
 
 def makeAudioList(srtFile):
+    print("Reading srt file...")
     audioList = []
     # First item is left empty
     audioList.append("nothing")
