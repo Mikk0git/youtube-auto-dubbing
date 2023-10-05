@@ -9,7 +9,7 @@ def main():
         print("File not found")
         return
 
-    generateAudio(srtFile)
+    generateAudio("C:\Users\Milan\Documents\projects\youtube-auto-dubbing\srt\[English] I Created Another App To REVOLUTIONIZE YouTube [DownSub.com].srt")
 
 
 def generateAudio(srtFile):
