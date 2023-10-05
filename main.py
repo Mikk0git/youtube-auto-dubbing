@@ -14,16 +14,16 @@ def main():
         return
 
     audioList = makeAudioList(srtFile)
-    print(audioList)
+    # print(audioList)
 
     # Gtts
-    downloadAudio(audioList, "en")
+    generateAudio(audioList, "en")
 
 
 def makeAudioList(srtFile):
     audioList = []
     # First item is left empty
-    audioList.append({})
+    audioList.append("nothing")
 
     i = 1
     for line in srtFile:
@@ -47,6 +47,19 @@ def makeAudioList(srtFile):
 
             audioList[index]["text"] = line
 
+    return audioList
+
+
+def generateAudio(audioList, lang):
+    print("Generating audio...")
+    index = 1
+    for audio in audioList:
+        if audio != "nothing":
+
+            tts = gTTS(audio["text"])
+            tts.save(f"audio/{index}.mp3")
+            print(f"{index}/{len(audioList)-1}")
+            index += 1
     return audioList
 
 
