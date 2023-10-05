@@ -1,6 +1,7 @@
 import re
 from gtts import gTTS
 from googletrans import Translator
+from pydub import AudioSegment
 
 
 def main():
@@ -28,6 +29,9 @@ def main():
 
     # Gtts
     generateAudio(audioList, lang)
+
+    # Matching
+    matchingAudioToTime(audioList)
 
 
 def makeAudioList(srtFile):
@@ -84,8 +88,42 @@ def translateAudioList(audioList, lang):
 
             print(f"{index}/{len(audioList)-1}")
             index += 1
-    print(audioList)
     return audioList
+
+
+def matchingAudioToTime(audioList):
+    print("Matching audio to time...")
+    index = 1
+    for audio in audioList:
+        if audio != "nothing":
+            print(audio)
+            start = ((int(audio["start"][:2])*3600) +
+                     (int(audio["start"][3:5]) * 60) +
+                     int(audio["start"][6:8]) +
+                     float("0." + audio["start"][9:12]))
+
+            end = ((int(audio["end"][:2])*3600) +
+                   (int(audio["end"][3:5]) * 60) +
+                   int(audio["end"][6:8]) +
+                   float("0." + audio["end"][9:12]))
+
+            desiredDuration = end - start
+            print(f"desiredDuration: {desiredDuration}")
+
+            audioFile = AudioSegment.from_file(f"audio/{index}.mp3")
+
+            audioDuration = len(audioFile) / 1000.0
+            print("audioDuration: ", audioDuration)
+            ratio = desiredDuration/audioDuration
+            print(f"Ratio: {ratio}")
+
+            # This is not working
+            # Another solution for changing speed needed
+            audioFile = audioFile.speedup(playback_speed=ratio)
+            audioFile.export(f"audio/{index}.mp3", format="mp3")
+
+            print(f"{index}/{len(audioList)-1}")
+            index += 1
 
 
 main()
