@@ -1,4 +1,5 @@
 import re
+import os
 from gtts import gTTS
 from googletrans import Translator
 from pydub import AudioSegment
@@ -73,6 +74,7 @@ def generateAudio(audioList, lang):
 
             tts = gTTS(audio["text"], lang=lang)
             tts.save(f"audio/{index}.mp3")
+            mp3ToWav(f"audio/{index}.mp3")
             print(f"{index}/{len(audioList)-1}")
             index += 1
     return audioList
@@ -110,7 +112,7 @@ def matchingAudioToTime(audioList):
             desiredDuration = end - start
             print(f"desiredDuration: {desiredDuration}")
 
-            audioFile = AudioSegment.from_file(f"audio/{index}.mp3")
+            audioFile = AudioSegment.from_file(f"audio/{index}.wav")
 
             audioDuration = len(audioFile) / 1000.0
             print("audioDuration: ", audioDuration)
@@ -120,10 +122,17 @@ def matchingAudioToTime(audioList):
             # This is not working
             # Another solution for changing speed needed
             audioFile = audioFile.speedup(playback_speed=ratio)
-            audioFile.export(f"audio/{index}.mp3", format="mp3")
+            audioFile.export(f"audio/{index}.wav", format="wav")
 
             print(f"{index}/{len(audioList)-1}")
             index += 1
+
+
+def mp3ToWav(audioDIrMp3):
+    audio = AudioSegment.from_mp3(audioDIrMp3)
+    audioDIrWav = audioDIrMp3.replace(".mp3", ".wav")
+    audio.export(audioDIrWav, format="wav")
+    os.remove(audioDIrMp3)
 
 
 main()
