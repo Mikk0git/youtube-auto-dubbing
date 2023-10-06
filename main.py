@@ -143,9 +143,9 @@ def combineAudio(audioList):
     index = 1
 
     endOfVideo = ((int(audioList[-1]["end"][:2])*3600) +
-                (int(audioList[-1]["end"][3:5]) * 60) +
-                int(audioList[-1]["end"][6:8]) +
-                float("0." + audioList[-1]["end"][9:12]))
+                  (int(audioList[-1]["end"][3:5]) * 60) +
+                  int(audioList[-1]["end"][6:8]) +
+                  float("0." + audioList[-1]["end"][9:12]))
 
     combinedAudio = AudioSegment.silent(duration=(endOfVideo*1000))
     for audio in audioList:
@@ -161,6 +161,13 @@ def combineAudio(audioList):
             print(f"{index}/{len(audioList)-1}")
             index += 1
     combinedAudio.export("finall.wav", format="wav")
+
+    deleteAllFilesInFolder("audio")
+
+
+def deleteAllFilesInFolder(dir):
+    for file in os.listdir(dir):
+        os.remove(f"audio/{file}")
 
 
 main()
