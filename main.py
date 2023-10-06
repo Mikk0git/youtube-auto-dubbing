@@ -36,6 +36,8 @@ def main():
     # Matching
     matchingAudioToTime(audioList)
 
+    combineAudio(audioList)
+
 
 def makeAudioList(srtFile):
     print("Reading srt file...")
@@ -134,6 +136,31 @@ def mp3ToWav(audioDIrMp3):
     audioDIrWav = audioDIrMp3.replace(".mp3", ".wav")
     audio.export(audioDIrWav, format="wav")
     os.remove(audioDIrMp3)
+
+
+def combineAudio(audioList):
+    print("Combining audio...")
+    index = 1
+
+    endOfVideo = ((int(audioList[-1]["end"][:2])*3600) +
+                (int(audioList[-1]["end"][3:5]) * 60) +
+                int(audioList[-1]["end"][6:8]) +
+                float("0." + audioList[-1]["end"][9:12]))
+
+    combinedAudio = AudioSegment.silent(duration=(endOfVideo*1000))
+    for audio in audioList:
+        if audio != "nothing":
+            start = ((int(audio["start"][:2])*3600) +
+                     (int(audio["start"][3:5]) * 60) +
+                     int(audio["start"][6:8]) +
+                     float("0." + audio["start"][9:12]))
+
+            combinedAudio = combinedAudio.overlay(AudioSegment.from_file(
+                f"audio/{index}.wav"), position=(start*1000))
+
+            print(f"{index}/{len(audioList)-1}")
+            index += 1
+    combinedAudio.export("finall.wav", format="wav")
 
 
 main()
