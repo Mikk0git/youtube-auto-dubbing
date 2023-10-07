@@ -6,6 +6,7 @@ from googletrans import Translator
 from pydub import AudioSegment
 import soundfile as sf
 import pyrubberband as pyrb
+import yt_dlp
 
 
 def main():
@@ -15,6 +16,18 @@ def main():
         return
 
     ytLink = sys.argv[1]
+
+    ydl_opts = {
+        'writesubtitles': True,
+        # 'sub-lang': 'en',
+        'allsubtitles': True,
+        'skip_download': True,
+        'outtmpl': os.path.join('srt', '%(id)s'),
+
+    }
+
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        ydl.download([ytLink])
 
     srtFileDir = None
     lang = None
@@ -57,6 +70,7 @@ def main():
 
 
 def makeAudioList(srtFile):
+    # ToDo remake this function to serve multiple styles of subtitles
     print("Reading srt file...")
     audioList = []
     # First item is left empty
