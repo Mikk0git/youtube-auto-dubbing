@@ -63,7 +63,8 @@ def main():
         else:
             print("No subtitles found")
             return
-        srtFile = open(srtFileDir, "r")
+        # print(srtFileDir)
+    srtFile = open(srtFileDir, "r", encoding='utf-8')
 
     print("Youtube Auto Dubbing")
 
@@ -83,33 +84,31 @@ def main():
 
 
 def makeAudioList(srtFile):
-    # ToDo remake this function to serve multiple styles of subtitles
     print("Reading srt file...")
     audioList = []
     # First item is left empty
     audioList.append("nothing")
 
-    i = 1
+    i = 0
     for line in srtFile:
 
         line = line.strip()
+        print(line)
 
-        if line == f"{i}":
-            index = i
-            audioList.append({})
-
+        if re.match(r'^\d{2}:\d{2}:\d{2}[.,]\d{3} --> \d{2}:\d{2}:\d{2}[.,]\d{3}$', line):
             i += 1
-
-        elif re.match(r'^\d{2}:\d{2}:\d{2},\d{3} --> \d{2}:\d{2}:\d{2},\d{3}$', line):
             start = line[:12]
             end = line[17:]
 
-            audioList[index]["start"] = start
-            audioList[index]["end"] = end
+            audioList.append({
+                "start": start,
+                "end": end,
+                "text": ""
+            })
 
-        elif len(line) > 0:
+        elif len(line) > 0 and i != 0 and line != f"{i+1}":
 
-            audioList[index]["text"] = line
+            audioList[i]["text"] = audioList[i]["text"] + " " + line
 
     return audioList
 
@@ -129,6 +128,7 @@ def generateAudio(audioList, lang):
 
 
 def translateAudioList(audioList, lang):
+    # ToDo instead of translating audioList translate entire file for more context
     print("Translating audio...")
     index = 1
     translator = Translator()
