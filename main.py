@@ -11,7 +11,7 @@ import yt_dlp
 
 def main():
 
-    if len(sys.argv) != 6:
+    if len(sys.argv) == 1:
         print("Usage: python main.py <youtube link> -s <dir to subtitles> -l <target language>")
         return
 
@@ -27,7 +27,9 @@ def main():
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        ydl.download([ytLink])
+        info_dict = ydl.extract_info(ytLink)
+
+    id = info_dict.get('id')
 
     srtFileDir = None
     lang = None
@@ -37,7 +39,6 @@ def main():
         if sys.argv[i] == "-s":
             try:
                 srtFileDir = sys.argv[i + 1]
-                srtFile = open(srtFileDir, "r")
             except FileNotFoundError:
                 print("File not found")
                 return
@@ -51,6 +52,18 @@ def main():
                 return
             if lang == "":
                 lang = "en"
+
+    if srtFileDir == None:
+
+        if os.path.exists(f"srt/{id}.{lang}.vtt"):
+            srtFileDir = f"srt/{id}.{lang}.vtt"
+        elif os.path.exists(f"srt/{id}.en.vtt"):
+            srtFileDir = f"srt/{id}.en.vtt"
+        # ToDo else find vtt file
+        else:
+            print("No subtitles found")
+            return
+        srtFile = open(srtFileDir, "r")
 
     print("Youtube Auto Dubbing")
 
