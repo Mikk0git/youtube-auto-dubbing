@@ -7,6 +7,7 @@ from pydub import AudioSegment
 import soundfile as sf
 import pyrubberband as pyrb
 import yt_dlp
+import shutil
 
 
 def main():
@@ -15,6 +16,9 @@ def main():
         print("Usage: python main.py <youtube link> -s <dir to subtitles> -l <target language>")
         return
 
+    os.makedirs("tmp/subs", exist_ok=True)
+    os.makedirs("tmp/audio", exist_ok=True)
+
     ytLink = sys.argv[1]
 
     ydl_opts = {
@@ -22,7 +26,7 @@ def main():
         # 'sub-lang': 'en',
         'allsubtitles': True,
         'skip_download': True,
-        'outtmpl': os.path.join('srt', '%(id)s'),
+        'outtmpl': os.path.join('tmp/subs', '%(id)s'),
 
     }
 
@@ -31,14 +35,14 @@ def main():
 
     id = info_dict.get('id')
 
-    srtFileDir = None
+    subsFileDir = None
     lang = None
 
     for i in range(2, len(sys.argv), 2):
 
         if sys.argv[i] == "-s":
             try:
-                srtFileDir = sys.argv[i + 1]
+                subsFileDir = sys.argv[i + 1]
             except FileNotFoundError:
                 print("File not found")
                 return
@@ -53,18 +57,18 @@ def main():
             if lang == "":
                 lang = "en"
 
-    if srtFileDir == None:
+    if subsFileDir == None:
 
-        if os.path.exists(f"srt/{id}.{lang}.vtt"):
-            srtFileDir = f"srt/{id}.{lang}.vtt"
-        elif os.path.exists(f"srt/{id}.en.vtt"):
-            srtFileDir = f"srt/{id}.en.vtt"
+        if os.path.exists(f"tmp/subs/{id}.{lang}.vtt"):
+            subsFileDir = f"tmp/subs/{id}.{lang}.vtt"
+        elif os.path.exists(f"tmp/subs/{id}.en.vtt"):
+            subsFileDir = f"tmp/subs/{id}.en.vtt"
         # ToDo else find vtt file
         else:
             print("No subtitles found")
             return
-        # print(srtFileDir)
-    srtFile = open(srtFileDir, "r", encoding='utf-8')
+        # print(subsFileDir)
+    srtFile = open(subsFileDir, "r", encoding='utf-8')
 
     print("Youtube Auto Dubbing")
 
@@ -82,9 +86,11 @@ def main():
 
     combineAudio(audioList)
 
+    shutil.rmtree("tmp")
+
 
 def makeAudioList(srtFile):
-    print("Reading srt file...")
+    print("Reading subtitle file...")
     audioList = []
     # First item is left empty
     audioList.append("nothing")
@@ -119,8 +125,8 @@ def generateAudio(audioList, lang):
         if audio != "nothing":
 
             tts = gTTS(audio["text"], lang=lang)
-            tts.save(f"audio/{index}.mp3")
-            mp3ToWav(f"audio/{index}.mp3")
+            tts.save(f"tmp/audio/{index}.mp3")
+            mp3ToWav(f"tmp/audio/{index}.mp3")
             print(f"{index}/{len(audioList)-1}", end='\r')
             index += 1
     return audioList
@@ -159,16 +165,17 @@ def matchingAudioToTime(audioList):
             desiredDuration = end - start
             # print(f"desiredDuration: {desiredDuration}")
 
-            audioFile = AudioSegment.from_file(f"audio/{index}.wav")
+            audioFile = AudioSegment.from_file(f"tmp/audio/{index}.wav")
             audioDuration = len(audioFile) / 1000.0
             # print("audioDuration: ", audioDuration)
 
             ratio = desiredDuration/audioDuration
             # print(f"Ratio: {ratio}")
 
-            data, samplerate = sf.read(f"audio/{index}.wav")
+            data, samplerate = sf.read(f"tmp/audio/{index}.wav")
             y_stretch = pyrb.time_stretch(data, samplerate, (1/ratio))
-            sf.write(f"audio/{index}.wav", y_stretch, samplerate, format='wav')
+            sf.write(f"tmp/audio/{index}.wav",
+                     y_stretch, samplerate, format='wav')
 
             print(f"{index}/{len(audioList)-1}", end='\r')
             index += 1
@@ -199,18 +206,11 @@ def combineAudio(audioList):
                      float("0." + audio["start"][9:12]))
 
             combinedAudio = combinedAudio.overlay(AudioSegment.from_file(
-                f"audio/{index}.wav"), position=(start*1000))
+                f"tmp/audio/{index}.wav"), position=(start*1000))
 
             print(f"{index}/{len(audioList)-1}", end='\r')
             index += 1
     combinedAudio.export("finall.wav", format="wav")
-
-    deleteAllFilesInFolder("audio")
-
-
-def deleteAllFilesInFolder(dir):
-    for file in os.listdir(dir):
-        os.remove(f"audio/{file}")
 
 
 main()
