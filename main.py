@@ -1,4 +1,5 @@
 import re
+import sys
 import os
 from gtts import gTTS
 from googletrans import Translator
@@ -8,21 +9,37 @@ import pyrubberband as pyrb
 
 
 def main():
-    print("Youtube Auto Dubbing")
 
-    try:
-        srtFileDir = input("Srt File Path: ")
-        srtFile = open(srtFileDir, "r")
-    except FileNotFoundError:
-        print("File not found")
+    if len(sys.argv) != 6:
+        print("Usage: python main.py <youtube link> -s <dir to subtitles> -l <target language>")
         return
-    lang = input("Target Language: ")
-    if not lang in ["", "en", "de", "fr", "es", "it", "pt", "nl", "pl", "ru", "tr", "ja", "ko", "zh"]:
-        print("Language not supported")
-        print("Supported languages: en, de, fr, es, it, pt, nl, pl, ru, tr, ja, ko, zh")
-        return
-    if lang == "":
-        lang = "en"
+
+    ytLink = sys.argv[1]
+
+    srtFileDir = None
+    lang = None
+
+    for i in range(2, len(sys.argv), 2):
+
+        if sys.argv[i] == "-s":
+            try:
+                srtFileDir = sys.argv[i + 1]
+                srtFile = open(srtFileDir, "r")
+            except FileNotFoundError:
+                print("File not found")
+                return
+
+        elif sys.argv[i] == "-l":
+            lang = sys.argv[i + 1]
+            if not lang in ["", "en", "de", "fr", "es", "it", "pt", "nl", "pl", "ru", "tr", "ja", "ko", "zh"]:
+                print("Language not supported")
+                print(
+                    "Supported languages: en, de, fr, es, it, pt, nl, pl, ru, tr, ja, ko, zh")
+                return
+            if lang == "":
+                lang = "en"
+
+    print("Youtube Auto Dubbing")
 
     # Read srt file
     audioList = makeAudioList(srtFile)
