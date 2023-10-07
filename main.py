@@ -93,7 +93,6 @@ def makeAudioList(srtFile):
     for line in srtFile:
 
         line = line.strip()
-        print(line)
 
         if re.match(r'^\d{2}:\d{2}:\d{2}[.,]\d{3} --> \d{2}:\d{2}:\d{2}[.,]\d{3}$', line):
             i += 1
@@ -122,7 +121,7 @@ def generateAudio(audioList, lang):
             tts = gTTS(audio["text"], lang=lang)
             tts.save(f"audio/{index}.mp3")
             mp3ToWav(f"audio/{index}.mp3")
-            print(f"{index}/{len(audioList)-1}")
+            print(f"{index}/{len(audioList)-1}", end='\r')
             index += 1
     return audioList
 
@@ -136,7 +135,7 @@ def translateAudioList(audioList, lang):
         if audio != "nothing":
             audio["text"] = translator.translate(audio["text"], dest=lang).text
 
-            print(f"{index}/{len(audioList)-1}")
+            print(f"{index}/{len(audioList)-1}", end='\r')
             index += 1
     return audioList
 
@@ -171,7 +170,7 @@ def matchingAudioToTime(audioList):
             y_stretch = pyrb.time_stretch(data, samplerate, (1/ratio))
             sf.write(f"audio/{index}.wav", y_stretch, samplerate, format='wav')
 
-            print(f"{index}/{len(audioList)-1}")
+            print(f"{index}/{len(audioList)-1}", end='\r')
             index += 1
 
 
@@ -202,7 +201,7 @@ def combineAudio(audioList):
             combinedAudio = combinedAudio.overlay(AudioSegment.from_file(
                 f"audio/{index}.wav"), position=(start*1000))
 
-            print(f"{index}/{len(audioList)-1}")
+            print(f"{index}/{len(audioList)-1}", end='\r')
             index += 1
     combinedAudio.export("finall.wav", format="wav")
 
