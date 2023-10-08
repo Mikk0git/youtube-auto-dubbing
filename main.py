@@ -60,12 +60,15 @@ def main():
             if lang == "":
                 lang = "en"
 
+    version = "1.0"
+    print("---Youtube Auto Dubbing---")
+    print(f"Version: {version}, by @mikk0")
+    print("https://github.com/Mikk0git/youtube-auto-dubbing")
+
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info_dict = ydl.extract_info(ytLink)
 
     id = info_dict.get('id')
-    print(f"ID: {id}")
-    print(f"Language: {lang}")
     if subsFileDir == None:
 
         if os.path.exists(f"tmp/yt/{id}.{lang}.vtt"):
@@ -79,10 +82,8 @@ def main():
         # print(subsFileDir)
     srtFile = open(subsFileDir, "r", encoding='utf-8')
 
-    version = "1.0"
-    print("---Youtube Auto Dubbing---")
-    print(f"Version: {version}, by @mikk0")
-
+    print(f"ID: {id}")
+    print(f"Language: {lang}")
     # Read srt file
     audioList = makeAudioList(srtFile)
 
@@ -142,11 +143,15 @@ def generateAudio(audioList, lang):
     index = 1
     for audio in audioList:
         if audio != "nothing":
+            try:
+                tts = gTTS(audio["text"], lang=lang)
+                tts.save(f"tmp/audio/{index}.mp3")
+                mp3ToWav(f"tmp/audio/{index}.mp3")
+                print(f"{index}/{len(audioList)-1}", end='\r')
+            except:
+                silence = AudioSegment.silent(duration=1000)
+                silence.export(f"tmp/audio/{index}.wav", format="wav")
 
-            tts = gTTS(audio["text"], lang=lang)
-            tts.save(f"tmp/audio/{index}.mp3")
-            mp3ToWav(f"tmp/audio/{index}.mp3")
-            print(f"{index}/{len(audioList)-1}", end='\r')
             index += 1
     return audioList
 
