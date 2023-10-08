@@ -79,7 +79,9 @@ def main():
         # print(subsFileDir)
     srtFile = open(subsFileDir, "r", encoding='utf-8')
 
-    print("Youtube Auto Dubbing")
+    version = "1.0"
+    print("---Youtube Auto Dubbing---")
+    print(f"Version: {version}, by @mikk0")
 
     # Read srt file
     audioList = makeAudioList(srtFile)
@@ -106,7 +108,7 @@ def main():
 
 
 def makeAudioList(srtFile):
-    print("Reading subtitle file...")
+    print("Reading subtitle file")
     audioList = []
     # First item is left empty
     # ToDO Its time to change it
@@ -136,7 +138,7 @@ def makeAudioList(srtFile):
 
 
 def generateAudio(audioList, lang):
-    print("Generating audio...")
+    print("Generating audio")
     index = 1
     for audio in audioList:
         if audio != "nothing":
@@ -151,7 +153,7 @@ def generateAudio(audioList, lang):
 
 def translateAudioList(audioList, lang):
     # ToDo instead of translating audioList translate entire file for more context
-    print("Translating audio...")
+    print("Translating audio")
     index = 1
     translator = Translator()
     for audio in audioList:
@@ -164,7 +166,7 @@ def translateAudioList(audioList, lang):
 
 
 def matchingAudioToTime(audioList):
-    print("Matching audio to time...")
+    print("Matching audio to time")
     index = 1
     for audio in audioList:
         if audio != "nothing":
@@ -206,7 +208,7 @@ def mp3ToWav(audioDIrMp3):
 
 
 def combineAudio(audioList, id):
-    print("Combining audio...")
+    print("Combining audio")
     index = 1
 
     endOfVideo = ((int(audioList[-1]["end"][:2])*3600) +
@@ -231,13 +233,12 @@ def combineAudio(audioList, id):
 
 
 def combineVideo(id):
-    print("Combining video...")
+    print("Combining video")
 
     input_video = f'tmp/yt/{id}.webm'
     input_audio = f'output/{id}.wav'
     output_video = f'output/{id}.mkv'
 
-    # FFmpeg command to add audio to the video
     ffmpeg_command = [
         'ffmpeg',
         '-v', 'error',
@@ -252,7 +253,7 @@ def combineVideo(id):
 
     try:
         subprocess.run(ffmpeg_command, check=True)
-        print(f'Audio added successfully to {input_video}')
+        print(f'Done')
     except subprocess.CalledProcessError as e:
         print(f'Error adding audio to {input_video}: {e}')
 
