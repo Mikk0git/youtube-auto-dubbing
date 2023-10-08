@@ -8,6 +8,7 @@ import soundfile as sf
 import pyrubberband as pyrb
 import yt_dlp
 import shutil
+import subprocess
 
 
 def main():
@@ -15,8 +16,11 @@ def main():
     if len(sys.argv) == 1:
         print("Usage: python main.py <youtube link> -s <dir to subtitles> -l <target language>")
         return
-
-    os.makedirs("tmp/subs", exist_ok=True)
+    try:
+        shutil.rmtree("tmp")
+    except:
+        pass
+    os.makedirs("tmp/yt", exist_ok=True)
     os.makedirs("tmp/audio", exist_ok=True)
 
     ytLink = sys.argv[1]
@@ -25,15 +29,11 @@ def main():
         'writesubtitles': True,
         # 'sub-lang': 'en',
         'allsubtitles': True,
-        'skip_download': True,
-        'outtmpl': os.path.join('tmp/subs', '%(id)s'),
+        'skip_download': False,
+        'outtmpl': os.path.join('tmp/yt', '%(id)s'),
+        'quiet': True,
 
     }
-
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info_dict = ydl.extract_info(ytLink)
-
-    id = info_dict.get('id')
 
     subsFileDir = None
     lang = None
@@ -47,6 +47,9 @@ def main():
                 print("File not found")
                 return
 
+        elif sys.argv[i] == "-a":
+            ydl_opts["skip_download"] = True
+
         elif sys.argv[i] == "-l":
             lang = sys.argv[i + 1]
             if not lang in ["", "en", "de", "fr", "es", "it", "pt", "nl", "pl", "ru", "tr", "ja", "ko", "zh"]:
@@ -57,12 +60,18 @@ def main():
             if lang == "":
                 lang = "en"
 
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        info_dict = ydl.extract_info(ytLink)
+
+    id = info_dict.get('id')
+    print(f"ID: {id}")
+    print(f"Language: {lang}")
     if subsFileDir == None:
 
-        if os.path.exists(f"tmp/subs/{id}.{lang}.vtt"):
-            subsFileDir = f"tmp/subs/{id}.{lang}.vtt"
-        elif os.path.exists(f"tmp/subs/{id}.en.vtt"):
-            subsFileDir = f"tmp/subs/{id}.en.vtt"
+        if os.path.exists(f"tmp/yt/{id}.{lang}.vtt"):
+            subsFileDir = f"tmp/yt/{id}.{lang}.vtt"
+        elif os.path.exists(f"tmp/yt/{id}.en.vtt"):
+            subsFileDir = f"tmp/yt/{id}.en.vtt"
         # ToDo else find vtt file
         else:
             print("No subtitles found")
@@ -78,21 +87,29 @@ def main():
     # Translate
     translateAudioList(audioList, lang)
 
+    srtFile.close()
+
     # Gtts
     generateAudio(audioList, lang)
 
     # Matching
     matchingAudioToTime(audioList)
 
-    combineAudio(audioList)
+    combineAudio(audioList, id)
 
-    shutil.rmtree("tmp")
+    combineVideo(id)
+
+    try:
+        shutil.rmtree("tmp")
+    except:
+        pass
 
 
 def makeAudioList(srtFile):
     print("Reading subtitle file...")
     audioList = []
     # First item is left empty
+    # ToDO Its time to change it
     audioList.append("nothing")
 
     i = 0
@@ -188,7 +205,7 @@ def mp3ToWav(audioDIrMp3):
     os.remove(audioDIrMp3)
 
 
-def combineAudio(audioList):
+def combineAudio(audioList, id):
     print("Combining audio...")
     index = 1
 
@@ -210,7 +227,34 @@ def combineAudio(audioList):
 
             print(f"{index}/{len(audioList)-1}", end='\r')
             index += 1
-    combinedAudio.export("finall.wav", format="wav")
+    combinedAudio.export(f"output/{id}.wav", format="wav")
+
+
+def combineVideo(id):
+    print("Combining video...")
+
+    input_video = f'tmp/yt/{id}.webm'
+    input_audio = f'output/{id}.wav'
+    output_video = f'output/{id}.mkv'
+
+    # FFmpeg command to add audio to the video
+    ffmpeg_command = [
+        'ffmpeg',
+        '-v', 'error',
+        '-i', input_video,
+        '-i', input_audio,
+        '-c:v', 'copy',
+        '-map', '0:v:0',
+        '-map', '1:a:0',
+        '-shortest',
+        output_video
+    ]
+
+    try:
+        subprocess.run(ffmpeg_command, check=True)
+        print(f'Audio added successfully to {input_video}')
+    except subprocess.CalledProcessError as e:
+        print(f'Error adding audio to {input_video}: {e}')
 
 
 main()

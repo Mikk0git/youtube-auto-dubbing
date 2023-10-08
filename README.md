@@ -24,6 +24,17 @@ pip install -r requirements.txt
 python main.py
 ```
 
+## Requirements
+
+- Python
+  ```
+  https://www.python.org/downloads/
+  ```
+- FFmpeg
+  ```
+  https://ffmpeg.org/download.html
+  ```
+
 ## ToDO
 
 - [ ] GUI
