@@ -105,7 +105,8 @@ def main():
 
     combineAudio(audioList, id)
 
-    combineVideo(id)
+    if ydl_opts["skip_download"] == False:
+        combineVideo(id)
 
     try:
         shutil.rmtree("tmp")
