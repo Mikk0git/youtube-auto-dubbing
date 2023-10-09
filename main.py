@@ -57,8 +57,9 @@ def main():
                 print(
                     "Supported languages: en, de, fr, es, it, pt, nl, pl, ru, tr, ja, ko, zh")
                 return
-            if lang == "":
-                lang = "en"
+
+    if lang == None or lang == "":
+        lang = "en"
 
     version = "1.1"
     print("---Youtube Auto Dubbing---")
