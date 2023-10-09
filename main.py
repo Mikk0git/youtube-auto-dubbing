@@ -60,7 +60,7 @@ def main():
             if lang == "":
                 lang = "en"
 
-    version = "1.0"
+    version = "1.1"
     print("---Youtube Auto Dubbing---")
     print(f"Version: {version}, by @mikk0")
     print("https://github.com/Mikk0git/youtube-auto-dubbing")
@@ -79,18 +79,23 @@ def main():
         else:
             print("No subtitles found")
             return
-        # print(subsFileDir)
-    srtFile = open(subsFileDir, "r", encoding='utf-8')
+
+    os.makedirs(f"output/{id}", exist_ok=True)
+
+    if subsFileDir == f"tmp/yt/{id}.{lang}.vtt":
+        subsFile = open(subsFileDir, "r", encoding='utf-8')
+        shutil.copyfile(subsFileDir, f"output/{id}/{id}.{lang}.vtt")
+    else:
+        # Translate
+        subsFile = translateAudioList(subsFileDir, lang, id)
 
     print(f"ID: {id}")
     print(f"Language: {lang}")
+
     # Read srt file
-    audioList = makeAudioList(srtFile)
+    audioList = makeAudioList(subsFile)
 
-    # Translate
-    translateAudioList(audioList, lang)
-
-    srtFile.close()
+    subsFile.close()
 
     # Gtts
     generateAudio(audioList, lang)
@@ -108,7 +113,7 @@ def main():
         pass
 
 
-def makeAudioList(srtFile):
+def makeAudioList(subsFile):
     print("Reading subtitle file")
     audioList = []
     # First item is left empty
@@ -116,7 +121,7 @@ def makeAudioList(srtFile):
     audioList.append("nothing")
 
     i = 0
-    for line in srtFile:
+    for line in subsFile:
 
         line = line.strip()
 
@@ -156,18 +161,37 @@ def generateAudio(audioList, lang):
     return audioList
 
 
-def translateAudioList(audioList, lang):
-    # ToDo instead of translating audioList translate entire file for more context
-    print("Translating audio")
+def translateAudioList(subsFileDir, lang, id):
+    print("Translating subtitles")
     index = 1
+    numberOfLines = countLines(subsFileDir)
     translator = Translator()
-    for audio in audioList:
-        if audio != "nothing":
-            audio["text"] = translator.translate(audio["text"], dest=lang).text
+    subsFile = open(subsFileDir, "r", encoding='utf-8')
+    translatedSubsFileDir = f"output/{id}/{id}.{lang}.vtt"
+    translatedSubsFile = open(translatedSubsFileDir, "w", encoding='utf-8')
+    for line in subsFile:
 
-            print(f"{index}/{len(audioList)-1}", end='\r')
-            index += 1
-    return audioList
+        if (not re.match(r'^\d{2}:\d{2}:\d{2}[.,]\d{3} --> \d{2}:\d{2}:\d{2}[.,]\d{3}$', line)
+            and len(line) > 0
+                and line != "WEBVTT\n"
+                and "Kind:" not in line
+                and "Language:" not in line
+            ):
+
+            translatedLine = translator.translate(line, dest=lang).text
+            translatedSubsFile.write(translatedLine + '\n')
+        elif "Language:" in line:
+            translatedSubsFile.write(f"Language: {lang}\n")
+        else:
+            translatedSubsFile.write(line)
+
+        print(f"{index}/{numberOfLines}", end='\r')
+        index += 1
+    subsFile.close()
+    translatedSubsFile.close()
+
+    translatedSubsFile = open(translatedSubsFileDir, "r", encoding='utf-8')
+    return translatedSubsFile
 
 
 def matchingAudioToTime(audioList):
@@ -234,15 +258,15 @@ def combineAudio(audioList, id):
 
             print(f"{index}/{len(audioList)-1}", end='\r')
             index += 1
-    combinedAudio.export(f"output/{id}.wav", format="wav")
+    combinedAudio.export(f"output/{id}/{id}.wav", format="wav")
 
 
 def combineVideo(id):
     print("Combining video")
 
     input_video = f'tmp/yt/{id}.webm'
-    input_audio = f'output/{id}.wav'
-    output_video = f'output/{id}.mkv'
+    input_audio = f'output/{id}/{id}.wav'
+    output_video = f'output/{id}/{id}.mkv'
 
     ffmpeg_command = [
         'ffmpeg',
@@ -261,6 +285,12 @@ def combineVideo(id):
         print(f'Done')
     except subprocess.CalledProcessError as e:
         print(f'Error adding audio to {input_video}: {e}')
+
+
+def countLines(filename):
+    i = 0
+    with open(filename, "r", encoding="utf-8") as file:
+        return sum(1 for _ in file)
 
 
 main()
