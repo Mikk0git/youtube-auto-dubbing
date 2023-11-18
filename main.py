@@ -52,10 +52,9 @@ def main():
 
         elif sys.argv[i] == "-l":
             lang = sys.argv[i + 1]
-            if not lang in ["", "en", "de", "fr", "es", "it", "pt", "nl", "pl", "ru", "tr", "ja", "ko", "zh"]:
+            if not lang in ["", "en", "de", "fr", "es", "it", "pt", "nl", "pl", "ru", "tr", "ja", "ko", "zh", "uk"]:
                 print("Language not supported")
-                print(
-                    "Supported languages: en, de, fr, es, it, pt, nl, pl, ru, tr, ja, ko, zh")
+                print("Supported languages: en, de, fr, es, it, pt, nl, pl, ru, tr, ja, ko, zh, uk")
                 return
 
     if lang == None or lang == "":
