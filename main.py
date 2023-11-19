@@ -32,6 +32,7 @@ def main():
         'skip_download': False,
         'outtmpl': os.path.join('tmp/yt', '%(id)s'),
         'quiet': True,
+        'format': 'mp4'
 
     }
 
@@ -266,9 +267,9 @@ def combineAudio(audioList, id):
 def combineVideo(id):
     print("Combining video")
 
-    input_video = f'tmp/yt/{id}.webm'
+    input_video = f'tmp/yt/{id}.mp4'
     input_audio = f'output/{id}/{id}.wav'
-    output_video = f'output/{id}/{id}.mkv'
+    output_video = f'output/{id}/{id}.mp4'
 
     ffmpeg_command = [
         'ffmpeg',
