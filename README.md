@@ -10,7 +10,7 @@ My version is more focused on simplicity and it doesn't require GCP or Azure API
 ## Usage
 
 ```
-  -l <language>                    Target language (en, de, fr, es, it, pt, nl, pl, ru, tr, ja, ko, zh)
+  -l <language>                    Target language (en, de, fr, es, it, pt, nl, pl, uk, ru, tr, ja, ko, zh)
   -s <subtitle directory>          Custom subtitles
   -a                               Audio only
 ```
