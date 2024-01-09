@@ -1,8 +1,9 @@
 # Youtube Auto Dubbing
-
+### WIP 👷‍♂️ 
 ##### Version: 1.1
 
 ### Simple tool for dubbing youtube videos with AI generatied voice
+
 
 Project was inspired by ThioJoe's [Auto Synced & Translated Dubs](https://github.com/ThioJoe/Auto-Synced-Translated-Dubs) [🎥](https://youtu.be/uaHmtJrZRdM?si=bda32upN7QwT686V)
 My version is more focused on simplicity and it doesn't require GCP or Azure API
